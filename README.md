@@ -25,6 +25,6 @@ La liste des commandes est la suivante :
 Commande | Description | Exemple | Résultat attendu
 ------------ |  ------------- | ------------- | ------------
 ***ping*** | Permet de vérifier le bon fonctionnement du bot | ping | "pong"
-***help*** | Permet d'afficher la liste des commandes utilisables par un utilisateur "lambda" (toutes sauf la commande terminate) | !help | Liste des commandes
+***help*** | Permet d'afficher la liste des commandes utilisables | !help | Liste des commandes
 ***fill*** | Permet au bot d'alimenter sa base de données à partir de l'identifiant d'un salon. Les citations sont récupérées dans le salon identifié. Les citations récupérées sont celles commencant et se finissant par des guillemets ou des chevrons. | !fill | "Citations de Marquesuzaà mises à jour !"
 ***m*** | Commande spécifique à un serveur, pour afficher des citations d'un enseignant de l'IUT de Bayonne et du Pays basque. | !marqua | "Si ma tante en avait, ce serait mon oncle"
