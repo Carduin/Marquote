@@ -64,4 +64,4 @@ typings/
 .idea/
 
 #Data files
-/marquaData.json
+/data.json

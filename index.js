@@ -18,6 +18,7 @@ try {
 bot.on('ready', () => {
     console.info("\n\n\"Faire de l'agilité, ce n'est pas faire de l'arrache !\"\n\n" + bot.user.tag + "\n\n");
     var index = 0;
+    bot.user.setActivity(PREFIX + 'help', {type: 'PLAYING'})
 });
 
 bot.on('message', msg => {
@@ -62,7 +63,7 @@ bot.on('message', msg => {
             msg.channel.send({
                 embed: {
                     color: 15844367,
-                    title: "Marquesuzaà dit...",
+                    title: "Marqua dit...",
                     description: randomQuote,
                     footer: {
                         text: "© Christophe Marquesuzaà"
