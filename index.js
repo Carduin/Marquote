@@ -16,7 +16,7 @@ try {
 } catch (e) {}
 
 bot.on('ready', () => {
-    console.info("\n\n\"Je viens de Mauléon, et alors ?\"\n\n" + bot.user.tag + "\n\n");
+    console.info("\n\n\"Faire de l'agilité, ce n'est pas faire de l'arrache !\"\n\n" + bot.user.tag + "\n\n");
     var index = 0;
 });
 
