@@ -10,9 +10,9 @@ const QUOTES_CHANNEL_ID = process.env.QUOTES_CHANNEL_ID;
 
 bot.login(TOKEN);
 
-var marquaData;
+var quotesData;
 try {
-    marquaData = JSON.parse(fs.readFileSync('marquaData.json'));
+    quotesData = JSON.parse(fs.readFileSync('data.json'));
 } catch (e) {}
 
 bot.on('ready', () => {
@@ -31,13 +31,7 @@ bot.on('message', msg => {
             embed: {
                 color: 3066993,
                 title: "Aide",
-                description: "Liste des commandes :",
-                fields: [
-                {
-                    name: "Marquote",
-                    value: "Pour obtenir une citation du dieu Marqua, écris **" + PREFIX + "m**. Pour mettre à jour les citations, écris **" + PREFIX + "fill**. ***Attention*** ! Les citations doivent commencer et se finir par des guillements !"
-                }
-                ],
+                description: "Pour obtenir une citation du dieu Marqua, écris **" + PREFIX + "m**. Pour mettre à jour les citations, écris **" + PREFIX + "fill**. ***Attention*** ! Les citations doivent commencer et se finir par des guillements !",
                 footer: {
                     text: "© Marquote, a Discord bot made by Carduin"
                 }
@@ -52,23 +46,24 @@ bot.on('message', msg => {
                 messages.forEach(message => {
                     quotes.push(message);
                 });
-                fs.writeFileSync('marquaData.json', JSON.stringify(quotes,null, 4));
-                marquaData = JSON.parse(fs.readFileSync('marquaData.json'));
-                msg.channel.send("Citations de Marquesuzaà mises à jour !")
+                fs.writeFileSync('data.json', JSON.stringify(quotes,null, 4));
+                quotesData = JSON.parse(fs.readFileSync('data.json'));
+                msg.channel.send("Citations mises à jour !")
             });
         }
         else {
-            msg.channel.send("Je n'ai pas accès au salon des citations !")
+            msg.channel.send("Je n'ai pas accès au salon des citations indiqué !")
         }
 
     }
     if (command === PREFIX + "m") {
-        if(marquaData != undefined) {
+        if(quotesData != undefined) {
+            randomQuote = quotesData[Math.floor(Math.random() * quotesData.length)];
             msg.channel.send({
                 embed: {
                     color: 15844367,
                     title: "Marquesuzaà dit...",
-                    description: marquaData[Math.floor(Math.random() * marquaData.length)],
+                    description: randomQuote,
                     footer: {
                         text: "© Christophe Marquesuzaà"
                     }
