@@ -1,0 +1,16 @@
+{
+  "name": "marquote-bot",
+  "version": "1.0.0",
+  "description": "A quote Discord Bot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "launch": "node index.js"
+  },
+  "author": "Arthur Murillo",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "dotenv": "^8.2.0"
+  }
+}
