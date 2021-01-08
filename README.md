@@ -30,4 +30,3 @@ Commande | Description | Exemple | Résultat attendu
 ***help*** | Permet d'afficher la liste des commandes utilisables | !help | Liste des commandes
 ***fill*** | Permet au bot d'alimenter sa base de données à partir de l'identifiant d'un salon. Les citations sont récupérées dans le salon identifié. Les citations récupérées sont celles commencant et se finissant par des guillemets ou des chevrons | !fill | "Citations de Marquesuzaà mises à jour !"
 ***m*** | Commande spécifique à un serveur, pour afficher des citations d'un enseignant de l'IUT de Bayonne et du Pays basque | !marqua | "Si ma tante en avait, ce serait mon oncle"
-***kill*** | Tue le processus du bot (l'éteint) | !kill | Un gif et l'arrêt du bot

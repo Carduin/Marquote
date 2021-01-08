@@ -75,19 +75,6 @@ bot.on('message', msg => {
             msg.channel.send("Pas de fichier de quotes. Merci d'exécuter la commande **" + PREFIX + "fill**.")
         }
     }
-    if (command === PREFIX + "kill") {
-        if(msg.author.id === ADMIN_ID) {
-            msg.channel.send("", {
-                files: [
-                    "https://i.kym-cdn.com/entries/icons/mobile/000/034/135/adios.jpg"
-                ]
-            }).then(function() {
-                process.exit()
-            });
-        } else {
-            msg.channel.send("I'm sorry Dave, I'm afraid I can't do that")
-        }
-    }
 });
 
 async function getQuotesFromGivenChannel(channel, limit = 500) {
