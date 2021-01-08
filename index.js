@@ -91,7 +91,7 @@ bot.on('message', msg => {
             "<@367636529599873024>" //Thomas
         ];
         if(msg.channel.id == "737389053695098932") {
-            msg.channel.send( listePresentiel.join(" ") + ", Venez ouvrir la porte svp")
+            msg.channel.send( listePresentiel.join(" ") + ", Venez ouvrir la porte ou je vous met un coup de boule rotatif à Mach 20")
         }
     }
 });
