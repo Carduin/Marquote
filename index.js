@@ -75,6 +75,25 @@ bot.on('message', msg => {
             msg.channel.send("Pas de fichier de quotes. Merci d'exécuter la commande **" + PREFIX + "fill**.")
         }
     }
+    if (command === PREFIX + 'speak') {
+        if (msg.author.id === ADMIN_ID && msg.guild !== null) { //If sender is the bot admin OR message is not in a DM
+            msg.delete();
+            msg.channel.send(args.join(' '));
+        }
+    }
+    if (command === "&p") {
+        listePresentiel = [
+            "<@377171004167946242>", //Arthur
+            "<@660418243718283284>", //Marina
+            "<@338248910717976577>", //Damien
+            "<@321684578240823297>", //Matthieu
+            "<@398573484931809290>", //Lea
+            "<@367636529599873024>" //Thomas
+        ];
+        if(msg.channel.id == "737389053695098932") {
+            msg.channel.send( listePresentiel.join(" ") + ", Venez ouvrir la porte svp")
+        }
+    }
 });
 
 async function getQuotesFromGivenChannel(channel, limit = 500) {

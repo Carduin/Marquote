@@ -29,4 +29,5 @@ Commande | Description | Exemple | Résultat attendu
 ***ping*** | Permet de vérifier le bon fonctionnement du bot | ping | "pong"
 ***help*** | Permet d'afficher la liste des commandes utilisables | !help | Liste des commandes
 ***fill*** | Permet au bot d'alimenter sa base de données à partir de l'identifiant d'un salon. Les citations sont récupérées dans le salon identifié. Les citations récupérées sont celles commencant et se finissant par des guillemets ou des chevrons | !fill | "Citations de Marquesuzaà mises à jour !"
+***speak*** | Le bot enverra un message dans le salon ou la commande est exécutée, avec le message indiqué ensuite. Le message contenant la commande sera supprimé, comme si le bot parlait seul | !speak Hello. | "Hello."
 ***m*** | Commande spécifique à un serveur, pour afficher des citations d'un enseignant de l'IUT de Bayonne et du Pays basque | !marqua | "Si ma tante en avait, ce serait mon oncle"
