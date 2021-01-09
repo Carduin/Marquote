@@ -95,7 +95,7 @@ bot.on('message', msg => {
                             return_changed_case:false,
                             remove_duplicates: true
                         });
-                    //extraction_result = removeRandomElementsFromArray(extraction_result, Math.floor(extraction_result.length/4));
+                    extraction_result = removeRandomElementsFromArray(extraction_result, Math.floor(extraction_result.length/2));
                     fs.writeFileSync('keywords.json', JSON.stringify(extraction_result,null, 4));
                     keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
                 });
