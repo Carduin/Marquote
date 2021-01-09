@@ -30,15 +30,16 @@ bot.on('message', msg => {
     const args = msg.content.trim().split(' ');
     const command = args.shift().toLowerCase();
 
-    authorIsNotSelf = msg.author.id !== bot.user.id;
-    authorIsAdmin = msg.author.id === ADMIN_ID;
-    botIsMentionned = msg.mentions.has(bot.user);
-    messageIsNotDM = msg.guild !== null;
-    messageIsFromKeyWordsReactionChannel = msg.channel.id === KEYWORDS_REACTION_CHANNEL_ID;
-    keywordsDataExists = keywordsData !== undefined;
-    quotesDataExists = quotesData !== undefined;
-    quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined;
-    keywordsChannelIsAccessible = bot.channels.cache.get(KEYWORDS_REACTION_CHANNEL_ID) !== undefined;
+    var authorIsNotSelf = msg.author.id !== bot.user.id;
+    var authorIsAdmin = msg.author.id === ADMIN_ID;
+    var botIsMentionned = msg.mentions.has(bot.user);
+    var messageIsNotDM = msg.guild !== null;
+    var messageIsFromKeyWordsReactionChannel = msg.channel.id === KEYWORDS_REACTION_CHANNEL_ID;
+    var keywordsDataExists = keywordsData !== undefined;
+    var quotesDataExists = quotesData !== undefined;
+    var quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined;
+    var keywordsChannelIsAccessible = bot.channels.cache.get(KEYWORDS_REACTION_CHANNEL_ID) !== undefined;
+    var hasNotAlreadyAnsweredKeyword = true;
 
 
     switch(command) {
@@ -147,10 +148,11 @@ bot.on('message', msg => {
 
     if(authorIsNotSelf && keywordsDataExists) {
         keywordsData.forEach(keyword => {
-            if (msg.content.includes(keyword)) {
+            if (msg.content.includes(keyword) && hasNotAlreadyAnsweredKeyword) {
                 if(quotesData != undefined) {
                     randomQuote = quotesData[Math.floor(Math.random() * quotesData.length)];
                     msg.channel.send(randomQuote.slice(1,-1).trim());
+                    hasNotAlreadyAnsweredKeyword = false;
                 }
             }
         })
