@@ -127,7 +127,7 @@ bot.on('message', msg => {
                 });
             }
             else {
-                msg.channel.send("Pas de fichier de quotes. Merci d'exécuter la commande **" + PREFIX + "fill**.")
+                msg.channel.send("Pas de fichier de quotes. Merci d'exécuter la commande **" + PREFIX + "f**.")
             }
             hasAnswered = true;
             break;
