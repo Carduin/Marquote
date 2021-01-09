@@ -145,7 +145,7 @@ bot.on('message', msg => {
             break;
     }
 
-    if(authorIsNotSelf && messageIsFromKeyWordsReactionChannel && keywordsDataExists && keywordsChannelIsAccessible) {
+    if(authorIsNotSelf && keywordsDataExists) {
         keywordsData.forEach(keyword => {
             if (msg.content.includes(keyword)) {
                 if(quotesData != undefined) {
