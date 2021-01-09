@@ -108,7 +108,9 @@ bot.on('message', msg => {
     }
 
     if (msg.mentions.has(bot.user)) {
-        msg.channel.send('Mon préfixe est : **' + PREFIX + "**");
+        if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
+            msg.channel.send('Mon préfixe est : **' + PREFIX + "**");
+        }
     }
 });
 
