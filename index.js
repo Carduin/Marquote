@@ -2,18 +2,22 @@ require('dotenv').config();
 const Discord = require('discord.js');
 const https = require('https');
 const fs = require('fs');
+const keyword_extractor = require("keyword-extractor");
 const bot = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 const PREFIX = process.env.PREFIX;
 const ADMIN_ID = process.env.ADMIN_ID;
 const QUOTES_CHANNEL_ID = process.env.QUOTES_CHANNEL_ID;
+const KEYWORDS_REACTION_CHANNEL_ID = process.env.KEYWORDS_REACTION_CHANNEL_ID;
 var invalidQuotesFound;
 
 bot.login(TOKEN);
 
 var quotesData;
+var keywordsData;
 try {
-    quotesData = JSON.parse(fs.readFileSync('data.json'));
+    quotesData = JSON.parse(fs.readFileSync('quotes.json'));
+    keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
 } catch (e) {}
 
 bot.on('ready', () => {
@@ -25,6 +29,17 @@ bot.on('ready', () => {
 bot.on('message', msg => {
     const args = msg.content.trim().split(' ');
     const command = args.shift().toLowerCase();
+
+    authorIsNotSelf = msg.author.id !== bot.user.id;
+    authorIsAdmin = msg.author.id === ADMIN_ID;
+    botIsMentionned = msg.mentions.has(bot.user);
+    messageIsNotDM = msg.guild !== null;
+    messageIsFromKeyWordsReactionChannel = msg.channel.id === KEYWORDS_REACTION_CHANNEL_ID;
+    keywordsDataExists = keywordsData !== undefined;
+    quotesDataExists = quotesData !== undefined;
+    quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined;
+    keywordsChannelIsAccessible = bot.channels.cache.get(KEYWORDS_REACTION_CHANNEL_ID) !== undefined;
+
 
     switch(command) {
         case 'ping':
@@ -45,13 +60,13 @@ bot.on('message', msg => {
         case PREFIX + 'fill' :
             quotes = [];
             quotesChannel = bot.channels.cache.get(QUOTES_CHANNEL_ID);
-            if (quotesChannel !== undefined) {
+            if (quotesChannelIsAccessible) {
                 getQuotesFromGivenChannelAndFlagIfNotCorrect(quotesChannel, 1000).then(messages => {
                     messages.forEach(message => {
                         quotes.push(message);
                     });
-                    fs.writeFileSync('data.json', JSON.stringify(quotes,null, 4));
-                    quotesData = JSON.parse(fs.readFileSync('data.json'));
+                    fs.writeFileSync('quotes.json', JSON.stringify(quotes,null, 4));
+                    quotesData = JSON.parse(fs.readFileSync('quotes.json'));
 
                     invalidQuotesFoundErrorMessage = "";
 
@@ -59,7 +74,30 @@ bot.on('message', msg => {
                         invalidQuotesFoundErrorMessage = " **Attention**, des citations invalides ont été trouvées, et marquées avec ❌.";
                     }
 
-                    msg.channel.send("Citations mises à jour (" + messages.length +") !" + invalidQuotesFoundErrorMessage)
+                    msg.channel.send("Citations mises à jour (" + messages.length +") !" + invalidQuotesFoundErrorMessage);
+
+                    var sentence = "";
+                    quotesData.forEach(quote =>  {
+                        //Nettoyage des citations : suppression des guillemets en début / fin, suppression d'espaces inutiles et suppression d'émojis
+                        quote = quote.slice(1,-1).trim().replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                        //Suppression des tirets
+                        quote = quote.replace(/-/g, '').trim();
+                        //Suppression des étoiles
+                        quote = quote.replace(/\*/g, '').trim();
+                        sentence += quote;
+                        sentence += ". ";
+                    })
+                    //var sentence = quotesData.join('.');
+                    var extraction_result =
+                        keyword_extractor.extract(sentence,{
+                            language:"french",
+                            remove_digits: true,
+                            return_changed_case:false,
+                            remove_duplicates: true
+                        });
+                    extraction_result = removeRandomElementsFromArray(extraction_result, extraction_result.length/4);
+                    fs.writeFileSync('keywords.json', JSON.stringify(extraction_result,null, 4));
+                    keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
                 });
             }
             else {
@@ -67,7 +105,7 @@ bot.on('message', msg => {
             }
             break;
         case PREFIX + 'm' :
-            if(quotesData != undefined) {
+            if(quotesDataExists) {
                 randomQuote = quotesData[Math.floor(Math.random() * quotesData.length)];
                 msg.channel.send({
                     embed: {
@@ -85,7 +123,7 @@ bot.on('message', msg => {
             }
             break;
         case PREFIX + 'speak' :
-            if (msg.author.id === ADMIN_ID && msg.guild !== null) { //If sender is the bot admin OR message is not in a DM
+            if (authorIsAdmin && messageIsNotDM) { //If sender is the bot admin OR message is not in a DM
                 msg.delete();
                 msg.channel.send(args.join(' '));
             }
@@ -107,12 +145,29 @@ bot.on('message', msg => {
             break;
     }
 
-    if (msg.mentions.has(bot.user)) {
+    if(authorIsNotSelf && messageIsFromKeyWordsReactionChannel && keywordsDataExists && keywordsChannelIsAccessible) {
+        keywordsData.forEach(keyword => {
+            if (msg.content.includes(keyword)) {
+                if(quotesData != undefined) {
+                    randomQuote = quotesData[Math.floor(Math.random() * quotesData.length)];
+                    msg.channel.send(randomQuote.slice(1,-1).trim());
+                }
+            }
+        })
+    }
+
+    if (botIsMentionned) {
         if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
             msg.channel.send('Mon préfixe est : **' + PREFIX + "**");
         }
     }
 });
+
+function removeRandomElementsFromArray(arr, newLength) {
+    var a = arr.slice();
+    while (a.length > newLength) a.splice(randInt(a.length - 1), 1);
+    return a;
+}
 
 async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500) {
     invalidQuotesFound = false;
@@ -147,4 +202,8 @@ async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500
         }
     }
     return sum_messages;
+}
+
+function randInt(max, min) {
+    return ((min | 0) + Math.random() * (max + 1)) | 0;
 }

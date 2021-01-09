@@ -2,6 +2,7 @@
 
 ## Descriptif
 Marquote est un bot Discord permettant de sortir à volonté des citations d'un enseignant de l'IUT de Bayonne et du Pays Basque, **Christophe Marquesuzaà**.
+Le bot est également doté d'une fonction lui permettant de réagir à des mots clés sélectionnés au hasard parmi les citations, pour créer des situations humoristiques.
 
 ## Installation
 
@@ -17,6 +18,7 @@ Le paramétrage se fait via le fichier `.env`. Les options sont les suivantes :
 - ***PREFIX*** (valeur par défaut = **!**) : Le préfixe à écrire avant chaque commande du bot
 - ***ADMIN_ID*** (valeur par défaut = **377171004167946242**) : L'identifiant de l'utilisateur administrateur de l'instance du bot. Par défaut il s'agit de son créateur originel
 - ***QUOTES_CHANNEL_ID*** (valeur par défaut = **380444002538749964**) : L'identifiant du salon de citations dans lequel le bot ira piocher pour alimenter sa base de données de citations
+- ***KEYWORDS_REACTION_CHANNEL_ID*** (valeur par défaut = **385780366834925569**) : L'identifiant du salon dans lequel le bot réagira à certains mots clés par une citation.
 
 ## Commandes
 

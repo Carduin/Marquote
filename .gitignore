@@ -64,4 +64,5 @@ typings/
 .idea/
 
 #Data files
-/data.json
+/keywords.json
+/quotes.json
