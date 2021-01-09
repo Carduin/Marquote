@@ -49,7 +49,7 @@ bot.on('message', msg => {
                 });
                 fs.writeFileSync('data.json', JSON.stringify(quotes,null, 4));
                 quotesData = JSON.parse(fs.readFileSync('data.json'));
-                msg.channel.send("Citations mises à jour !")
+                msg.channel.send("Citations mises à jour (" + messages.length +") !")
             });
         }
         else {
