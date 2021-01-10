@@ -86,27 +86,33 @@ bot.on('message', msg => {
 
                     msg.channel.send("Citations mises à jour (" + messages.length +") !" + invalidQuotesFoundErrorMessage);
 
-                    var sentence = "";
+                    var keyWordsArray = [];
                     quotesData.forEach(quote =>  {
+                        originalQuote = quote;
                         //Nettoyage des citations : suppression d'espaces inutiles et suppression d'émojis
                         quote = quote.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
                         //Suppression des tirets
                         quote = quote.replace(/-/g, '').trim();
                         //Suppression des étoiles
                         quote = quote.replace(/\*/g, '').trim();
-                        sentence += quote;
-                        sentence += ". ";
+
+                        var extraction_result = keyword_extractor.extract(quote,{
+                                language:"french",
+                                remove_digits: true,
+                                return_changed_case:false,
+                                remove_duplicates: true
+                                });
+                        extraction_result = removeRandomElementsFromArray(extraction_result, extraction_result.length);
+
+                        if(extraction_result.length > 0 ) {
+                            keyWordsArray.push({
+                                keywords: extraction_result,
+                                quote: originalQuote
+                            })
+                        }
                     })
-                    //var sentence = quotesData.join('.');
-                    var extraction_result =
-                        keyword_extractor.extract(sentence,{
-                            language:"french",
-                            remove_digits: true,
-                            return_changed_case:false,
-                            remove_duplicates: true
-                        });
-                    extraction_result = removeRandomElementsFromArray(extraction_result, Math.floor(extraction_result.length/4));
-                    fs.writeFileSync('keywords.json', JSON.stringify(extraction_result,null, 4));
+
+                    fs.writeFileSync('keywords.json', JSON.stringify(keyWordsArray,null, 4));
                     keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
                 });
             }
@@ -182,24 +188,32 @@ bot.on('message', msg => {
         default:
             break;
     }
-/*
+
     //Keywords reaction
     if(authorIsNotSelf && keywordsDataExists && quotesDataExists && !hasAnswered) {
-        var keywordNotFound = true;
-        var currentKeyword = 0;
-        while (keywordNotFound && currentKeyword < keywordsData.length) {
-            if(msg.content.includes(keywordsData[currentKeyword])) {
-                randomQuote = quotesData[Math.floor(Math.random() * quotesData.length)];
-                msg.channel.send(randomQuote);
-                hasAnswered = true;
-                keywordNotFound = false;
+        var matchNotFound = true;
+        var currentKeywordObject = 0;
+        while (matchNotFound && currentKeywordObject < keywordsData.length) {
+            var keywordMatchNumber = 0;
+            keywordsData[currentKeywordObject].keywords.forEach(keyword => {
+                if(msg.content.toLowerCase().includes(keyword.toLowerCase())) {
+                    keywordMatchNumber++;
+                }
+            })
+            if(keywordMatchNumber >= keywordsData[currentKeywordObject].keywords.length/3) {
+                var oddsPercentage = Math.random() * 100;
+                console.info(oddsPercentage)
+                if(oddsPercentage >= 80) { // 20% de chances
+                    msg.channel.send(keywordsData[currentKeywordObject].quote);
+                }
+                matchNotFound = false;
             }
-            else {
-                currentKeyword ++;
+             else {
+                currentKeywordObject ++;
             }
         }
     }
-*/
+
     //Help if mentionned
     if (botIsMentionned) {
         if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
