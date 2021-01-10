@@ -139,8 +139,9 @@ bot.on('message', msg => {
                     var currentQuote = 0;
                     var substring = args.join(' ');
                     while (NoQuoteFound && currentQuote < quotesData.length) {
-                        if (quotesData[currentQuote].startsWith(substring) ) {
-                            msg.channel.send("..." + quotesData[currentQuote ].replace(substring, ''));
+                        currentQuoteData = quotesData[currentQuote];
+                        if (currentQuoteData.toLowerCase().startsWith(substring.toLowerCase()) ) {
+                            msg.channel.send("..." + currentQuoteData.substring(substring.length));
                             NoQuoteFound = false;
                         }
                         else {
