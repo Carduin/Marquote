@@ -3,25 +3,27 @@ const Discord = require('discord.js');
 const https = require('https');
 const fs = require('fs');
 const keyword_extractor = require("keyword-extractor");
+
 const bot = new Discord.Client();
 const TOKEN = process.env.TOKEN;
 const PREFIX = process.env.PREFIX;
 const ADMIN_ID = process.env.ADMIN_ID;
 const QUOTES_CHANNEL_ID = process.env.QUOTES_CHANNEL_ID;
-var invalidQuotesFound;
-
-bot.login(TOKEN);
 
 var quotesData;
+var invalidQuotesFound;
 var keywordsData;
-try {
-    quotesData = JSON.parse(fs.readFileSync('quotes.json'));
-    keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
-} catch (e) {}
+
+bot.login(TOKEN);
+loadData();
 
 bot.on('ready', () => {
     console.info("\n\n\"Faire de l'agilité, ce n'est pas faire de l'arrache !\"\n\n" + bot.user.tag + "\n\n");
     bot.user.setActivity(PREFIX + 'help', {type: 'PLAYING'})
+
+    setInterval(function() {
+        loadData();
+    }, 43200000) // 12h
 });
 
 bot.on('message', msg => {
@@ -267,4 +269,14 @@ async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500
 
 function randInt(max, min) {
     return ((min | 0) + Math.random() * (max + 1)) | 0;
+}
+
+function loadData() {
+    try {
+        quotesData = JSON.parse(fs.readFileSync('quotes.json'));
+        keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
+    } catch (e) {
+        quotesData = undefined;
+        keywordsData = undefined;
+    }
 }
