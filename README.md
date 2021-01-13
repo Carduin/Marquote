@@ -2,7 +2,7 @@
 
 ## Descriptif
 Marquote est un bot Discord permettant de sortir à volonté des citations d'un enseignant de l'IUT de Bayonne et du Pays Basque, **Christophe Marquesuzaà**.
-Le bot est également doté d'une fonction lui permettant de réagir à des mots clés sélectionnés au hasard parmi les citations, pour créer des situations humoristiques.
+Le bot est également doté d'une fonction lui permettant de réagir à des mots clés sélectionnés parmi les citations, pour répondre par une citation liée et créer des situations humoristiques.
 
 ## Installation
 
@@ -33,3 +33,12 @@ Commande | Description | Exemple | Résultat attendu
 ***s*** | Le bot enverra un message dans le salon ou la commande est exécutée, avec le message indiqué ensuite. Le message contenant la commande sera supprimé, comme si le bot parlait seul | !speak Hello. | "Hello."
 ***m*** | Permet d'obtenir une citation d'un enseignant de l'IUT de Bayonne et du Pays basque. Il s'agit de la fonction principale du bot | !m | "Si ma tante en avait, ce serait mon oncle"
 ***c*** | Permet d'obtenir une auto complétion d'une citation enregistrée | !c Bitch | "... ! **dabe**"
+
+## Analyse de mots clés
+
+Comme expliqué dans le partie **Descriptif**, le bot est capable, à chaque message envoyé, d'analyser le message pour y chercher des mots clés d'une citation et réagir avec la citation correspondante.
+Le fonctionnement est le suivant :
+* Lors de l'enregistrement des citations, le bot détermine pour chacune des mots clés. La citation et les mots clés correspondants sont stockés dans le fichier `keywords.json`.
+* A chaque nouveau message, le bot va parcourir le fichier `keywords.json` et tester la présence de chaque mot clé pour chaque citation dans le message.
+* Si le bot trouve plus d'un tiers des mots clés d'une citation dans le messages envoyé, *it's a match!*
+* Il y a alors 20% de chances que le bot dise juste après le message, sans aucun enclenchement de commande, la citation liée aux mots clés trouvés.
