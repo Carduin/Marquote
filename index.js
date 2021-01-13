@@ -180,7 +180,8 @@ bot.on('message', msg => {
                 "<@338248910717976577>", //Damien
                 "<@321684578240823297>", //Matthieu
                 "<@398573484931809290>", //Lea
-                "<@367636529599873024>" //Thomas
+                "<@367636529599873024>", //Thomas
+                "<@765837120035225621>" //Xavier
             ];
             if(msg.channel.id == "737389053695098932") {
                 msg.channel.send( listePresentiel.join(" ") + ", Venez ouvrir la porte ou je vous met un coup de boule rotatif à Mach 20")
