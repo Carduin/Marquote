@@ -11,7 +11,6 @@ const ADMIN_ID = process.env.ADMIN_ID;
 const QUOTES_CHANNEL_ID = process.env.QUOTES_CHANNEL_ID;
 
 var quotesData;
-var invalidQuotesFound;
 var keywordsData;
 
 bot.login(TOKEN);
@@ -20,13 +19,14 @@ loadData();
 bot.on('ready', () => {
     console.info("\n\n\"Faire de l'agilité, ce n'est pas faire de l'arrache !\"\n\n" + bot.user.tag + "\n\n");
     bot.user.setActivity(PREFIX + 'help', {type: 'PLAYING'})
-
-    setInterval(function() {
-        loadData();
-    }, 43200000) // 12h
 });
 
 bot.on('message', msg => {
+
+    if(keywordsData === undefined || quotesData === undefined) {
+        loadData()
+    }
+
     const args = msg.content.trim().split(' ');
     const command = args.shift().toLowerCase();
 
@@ -37,7 +37,6 @@ bot.on('message', msg => {
     var messageIsNotDM = msg.guild !== null;
     var keywordsDataExists = keywordsData !== undefined;
     var quotesDataExists = quotesData !== undefined;
-    var quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined;
     var hasAnswered = false;
 
     //Classic commands
@@ -70,57 +69,8 @@ bot.on('message', msg => {
             hasAnswered = true;
             break;
         case PREFIX + 'f' :
-            quotes = [];
-            quotesChannel = bot.channels.cache.get(QUOTES_CHANNEL_ID);
-            if (quotesChannelIsAccessible) {
-                getQuotesFromGivenChannelAndFlagIfNotCorrect(quotesChannel, 1000).then(messages => {
-                    messages.forEach(message => {
-                        quotes.push(message);
-                    });
-                    fs.writeFileSync('quotes.json', JSON.stringify(quotes,null, 4));
-                    quotesData = JSON.parse(fs.readFileSync('quotes.json'));
-
-                    invalidQuotesFoundErrorMessage = "";
-
-                    if(invalidQuotesFound) {
-                        invalidQuotesFoundErrorMessage = " **Attention**, des citations invalides ont été trouvées, et marquées avec ❌.";
-                    }
-
-                    msg.channel.send("Citations mises à jour (" + messages.length +") !" + invalidQuotesFoundErrorMessage);
-
-                    var keyWordsArray = [];
-                    quotesData.forEach(quote =>  {
-                        originalQuote = quote;
-                        //Nettoyage des citations : suppression d'espaces inutiles et suppression d'émojis
-                        quote = quote.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
-                        //Suppression des tirets
-                        quote = quote.replace(/-/g, '').trim();
-                        //Suppression des étoiles
-                        quote = quote.replace(/\*/g, '').trim();
-
-                        var extraction_result = keyword_extractor.extract(quote,{
-                                language:"french",
-                                remove_digits: true,
-                                return_changed_case:false,
-                                remove_duplicates: true
-                                });
-                        extraction_result = removeRandomElementsFromArray(extraction_result, extraction_result.length);
-
-                        if(extraction_result.length > 0 ) {
-                            keyWordsArray.push({
-                                keywords: extraction_result,
-                                quote: originalQuote
-                            })
-                        }
-                    })
-
-                    fs.writeFileSync('keywords.json', JSON.stringify(keyWordsArray,null, 4));
-                    keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
-                });
-            }
-            else {
-                msg.channel.send("Je n'ai pas accès au salon des citations indiqué !")
-            }
+            loadData();
+            msg.channel.send("Citations mises à jour (" + quotesData.length +") !");
             hasAnswered = true;
             break;
         case PREFIX + 'm' :
@@ -205,7 +155,6 @@ bot.on('message', msg => {
             })
             if(keywordMatchNumber >= keywordsData[currentKeywordObject].keywords.length/3) {
                 var oddsPercentage = Math.random() * 100;
-                console.info(oddsPercentage)
                 if(oddsPercentage >= 80) { // 20% de chances
                     msg.channel.send(keywordsData[currentKeywordObject].quote);
                 }
@@ -234,7 +183,6 @@ function removeRandomElementsFromArray(arr, newLength) {
 }
 
 async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500) {
-    invalidQuotesFound = false;
     const sum_messages = [];
     let last_id;
     while (true) {
@@ -254,7 +202,6 @@ async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500
             }
             else {
                 message.react('❌');
-                invalidQuotesFound = true;
             }
         });
 
@@ -273,11 +220,56 @@ function randInt(max, min) {
 }
 
 function loadData() {
+    writeData()
     try {
         quotesData = JSON.parse(fs.readFileSync('quotes.json'));
         keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
     } catch (e) {
         quotesData = undefined;
         keywordsData = undefined;
+    }
+}
+
+function writeData() {
+    let quotes = [];
+    let quotesChannel = bot.channels.cache.get(QUOTES_CHANNEL_ID);
+    let quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined
+    if (quotesChannelIsAccessible) {
+        getQuotesFromGivenChannelAndFlagIfNotCorrect(quotesChannel, 1000).then(messages => {
+            messages.forEach(message => {
+                quotes.push(message);
+            });
+            fs.writeFileSync('quotes.json', JSON.stringify(quotes,null, 4));
+            quotesData = JSON.parse(fs.readFileSync('quotes.json'));
+
+            var keyWordsArray = [];
+            quotesData.forEach(quote =>  {
+                originalQuote = quote;
+                //Nettoyage des citations : suppression d'espaces inutiles et suppression d'émojis
+                quote = quote.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                //Suppression des tirets
+                quote = quote.replace(/-/g, '').trim();
+                //Suppression des étoiles
+                quote = quote.replace(/\*/g, '').trim();
+
+                var extraction_result = keyword_extractor.extract(quote,{
+                    language:"french",
+                    remove_digits: true,
+                    return_changed_case:false,
+                    remove_duplicates: true
+                });
+                extraction_result = removeRandomElementsFromArray(extraction_result, extraction_result.length);
+
+                if(extraction_result.length > 0 ) {
+                    keyWordsArray.push({
+                        keywords: extraction_result,
+                        quote: originalQuote
+                    })
+                }
+            })
+
+            fs.writeFileSync('keywords.json', JSON.stringify(keyWordsArray,null, 4));
+            keywordsData = JSON.parse(fs.readFileSync('keywords.json'));
+        });
     }
 }
