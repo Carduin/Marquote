@@ -141,7 +141,7 @@ bot.on('message', msg => {
         default:
             break;
     }
-
+/*
     //Keywords reaction
     if(authorIsNotSelf && keywordsDataExists && quotesDataExists && !hasAnswered) {
         var matchNotFound = true;
@@ -165,7 +165,7 @@ bot.on('message', msg => {
             }
         }
     }
-
+*/
     //Help if mentionned
     if (botIsMentionned) {
         if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
