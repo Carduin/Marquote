@@ -82,6 +82,9 @@ bot.on('message', msg => {
                                 addQuote(messages[i]);
                             }
                             msg.channel.send("Citations mises à jour ("+ numberOfQuotesToAdd +") !");
+                            /*
+                            GESTION DES MOTS CLES
+                             */
                         }
                         else {
                             msg.channel.send("Aucune citation à ajouter !");
@@ -212,22 +215,6 @@ function getAllQuotes () {
                     objectArray.push(new Quote(currentResult.id, currentResult.text, currentResult.cooldown))
                 })
                 resolve(objectArray);
-            }
-        })
-    })
-}
-
-function getQuote (id) {
-    return new Promise(function (resolve, reject) {
-            dbConnection.query("SELECT * FROM quotes WHERE id = " + id, function (err, result) {
-            if (err) {
-                reject(err);
-            }
-            if (result.length > 0) {
-                resolve(new Quote(result[0].id, result[0].text, result[0].cooldown));
-            }
-            else {
-                reject("TABLE_EMPTY")
             }
         })
     })

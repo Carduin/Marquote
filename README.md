@@ -6,6 +6,7 @@ Le bot est également doté d'une fonction lui permettant de réagir à des mots
 
 ## Installation
 
+- Mettre en place sur le serveur de votre choix une base de données sous le SGBD MySql
 - Installation des dépendances : `cd marquote-master && npm install`
 - Changer le fichier `.env-sample` en `.env`
 - Modifier les valeurs du fichier `.env` selon indications dans la partie **Paramétrage**
@@ -18,6 +19,12 @@ Le paramétrage se fait via le fichier `.env`. Les options sont les suivantes :
 - ***PREFIX*** (valeur par défaut = **!**) : Le préfixe à écrire avant chaque commande du bot
 - ***ADMIN_ID*** (valeur par défaut = **377171004167946242**) : L'identifiant de l'utilisateur administrateur de l'instance du bot. Par défaut il s'agit de son créateur originel
 - ***QUOTES_CHANNEL_ID*** (valeur par défaut = **380444002538749964**) : L'identifiant du salon de citations dans lequel le bot ira piocher pour alimenter sa base de données de citations
+- ***DB_HOST*** (valeur par défaut = **localhost**) : Le serveur hébergeant la base de données à laquelle le bot se connectera
+- ***DB_PORT*** (valeur par défaut = **3306**) : Le port de la base de données à laquelle le bot se connectera
+- ***DB_NAME*** (valeur par défaut = **marquote**) : Le nom de la base de données à laquelle le bot se connectera
+- ***DB_USER*** (valeur par défaut = **root**) : L'identifiant de l'utilisateur de la base de données à laquelle le bot se connectera
+- ***DB_PASSWORD*** (valeur par défaut = **password**) : Le mot de passe de l'utilisateur de la base de données à laquelle le bot se connectera
+
 
 ## Commandes
 
@@ -38,7 +45,8 @@ Commande | Description | Exemple | Résultat attendu
 
 Comme expliqué dans le partie **Descriptif**, le bot est capable, à chaque message envoyé, d'analyser le message pour y chercher des mots clés d'une citation et réagir avec la citation correspondante.
 Le fonctionnement est le suivant :
-* Lors de l'enregistrement des citations, le bot détermine pour chacune des mots clés. La citation et les mots clés correspondants sont stockés dans le fichier `keywords.json`.
-* A chaque nouveau message, le bot va parcourir le fichier `keywords.json` et tester la présence de chaque mot clé pour chaque citation dans le message.
-* Si le bot trouve plus d'un tiers des mots clés d'une citation dans le messages envoyé, *it's a match!*
+* Lors de l'enregistrement des citations, le bot détermine pour chacune des mots clés. La citation et les mots clés correspondants sont stockés dans la base de données.
+* A chaque nouveau message, le bot va parcourir, pour chaque citation enregistrée, les mots clés correspondants et tester la présence de chaque mot clé pour chaque citation dans le message.
+* Si le bot trouve plus d'un tiers des mots clés d'une citation dans le messages envoyé, ***it's a match!***
 * Il y a alors 20% de chances que le bot dise juste après le message, sans aucun enclenchement de commande, la citation liée aux mots clés trouvés.
+* Pour éviter une trop grande redondance, un cooldown est appliqué aux citations. Si une citation est dite par réaction à ses mots clés, un cooldown de 5 occurences est appliqué. C'est à dire que pour 5 fois où les critères ci-dessus ont été validés, la citation ne sortira pas malgré tout, et le bot en cherchera une autre.
