@@ -21,14 +21,36 @@ bot.on('ready', () => {
     console.info("\n\n\"Faire de l'agilité, ce n'est pas faire de l'arrache !\"\n\n" + bot.user.tag + "\n\n");
     bot.user.setActivity(PREFIX + 'help', {type: 'PLAYING'})
 
-    dbConnection = mysql.createConnection({
+    var db_config = {
         host     : DB_HOST,
         port     : DB_PORT,
         user     : DB_USER,
         password : DB_PASSWORD,
         database : DB_NAME,
         charset : 'utf8mb4'
-    });
+    };
+
+    function handleDisconnect() {
+        dbConnection = mysql.createConnection(db_config);
+
+
+        dbConnection.connect(function(err) {
+            if(err) {
+                setTimeout(handleDisconnect, 2000);
+            }
+        });
+
+        dbConnection.on('error', function(err) {
+            console.log('db error', err);
+            if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+                handleDisconnect();
+            } else {
+                throw err;
+            }
+        });
+    }
+
+    handleDisconnect();
 
     checkDatabaseSetup();
 });
