@@ -71,6 +71,7 @@ bot.on('message', msg => {
             });
             break;
         case PREFIX + 'f' :
+            checkDatabaseSetup();
             let quotesChannel = bot.channels.cache.get(QUOTES_CHANNEL_ID);
             let quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined
             if (quotesChannelIsAccessible) {
@@ -111,6 +112,7 @@ bot.on('message', msg => {
             }
             break;
         case PREFIX + 'm' :
+            checkDatabaseSetup();
             getRandomQuote().then(quote => {
                 msg.channel.send({
                     embed: {
@@ -130,6 +132,7 @@ bot.on('message', msg => {
             }
             break;
         case PREFIX + 'c' :
+            checkDatabaseSetup();
             //Auto complete
             if(authorIsNotSelf) {
                 if(hasArguments) {
@@ -150,6 +153,8 @@ bot.on('message', msg => {
                         if(NoQuoteFound) {
                             msg.channel.send("Alors la je suis sans mots...Je n'ai rien trouvé à compléter");
                         }
+                    }).catch(err => {
+                        msg.channel.send("Une erreur est survenue ! Il est probablement nécéssaire d'utiliser la commande **" + PREFIX + "f**");
                     })
                 }
                 else {
@@ -167,6 +172,7 @@ bot.on('message', msg => {
 
             //Keywords reaction
             if(authorIsNotSelf) {
+                checkDatabaseSetup();
                 getAllQuotes().then(quotes => {
                     var matchNotFound = true;
                     var currentQuote = 0;
@@ -175,7 +181,10 @@ bot.on('message', msg => {
                         getKeyWordsByQuote(quotes[currentQuote].id).then(keywords => {
                             var keywordMatchNumber = 0;
                             keywords.forEach(keyword => {
-                                if(msg.content.toLowerCase().includes(keyword.text.toLowerCase())) {
+                                startCase = msg.content.toLowerCase().includes(" " + keyword.text.toLowerCase());
+                                middleCase = msg.content.toLowerCase().includes(" " + keyword.text.toLowerCase() + " ");
+                                endCase = msg.content.toLowerCase().includes(keyword.text.toLowerCase() + " ");
+                                if(startCase || middleCase || endCase) {
                                     keywordMatchNumber++;
                                 }
                             })
@@ -190,13 +199,13 @@ bot.on('message', msg => {
                                     else {
                                         updateQuoteCooldown(currentQuoteData.id, currentQuoteData.cooldown-1);
                                     }
-
                                 }
-
                             }
                         });
                         currentQuote++;
                     }
+                }).catch(err => {
+
                 })
             }
             break;
