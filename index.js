@@ -26,12 +26,11 @@ bot.on('ready', () => {
         port     : DB_PORT,
         user     : DB_USER,
         password : DB_PASSWORD,
-        database : DB_NAME
+        database : DB_NAME,
+        charset : 'utf8mb4'
     });
 
     checkDatabaseSetup();
-
-    addQuote("\"prout\"")
 });
 
 bot.on('message', msg => {
@@ -71,6 +70,39 @@ bot.on('message', msg => {
                 }
             });
             break;
+        case PREFIX + 'f' :
+            let quotesChannel = bot.channels.cache.get(QUOTES_CHANNEL_ID);
+            let quotesChannelIsAccessible = bot.channels.cache.get(QUOTES_CHANNEL_ID) !== undefined
+            if (quotesChannelIsAccessible) {
+                getCurrentSavedQuotesNumber().then(currentSavedNumber => {
+                    getQuotesFromGivenChannelAndFlagIfNotCorrect(quotesChannel, 1000).then(messages => {
+                        numberOfQuotesToAdd = messages.length - currentSavedNumber;
+                        if(numberOfQuotesToAdd > 0) {
+                            for(i = currentSavedNumber; i <= messages.length -1; i++) {
+                                addQuote(messages[i]);
+                            }
+                            msg.channel.send("Citations mises à jour ("+ numberOfQuotesToAdd +") !");
+                        }
+                        else {
+                            msg.channel.send("Aucune citation à ajouter !");
+                        }
+                    })
+                })
+            }
+            break;
+        case PREFIX + 'm' :
+            getRandomQuote().then(quote => {
+                msg.channel.send({
+                    embed: {
+                        color: 15844367,
+                        title: "Marqua dit...",
+                        description: quote.text
+                    }
+                });
+            }).catch(error => {
+                msg.channel.send("Une erreur est survenue ! Il est probablement nécéssaire d'utiliser la commande **" + PREFIX + "f**");
+            });
+            break;
         case PREFIX + 's' :
             if (authorIsAdmin && messageIsNotDM) { //If sender is the bot admin OR message is not in a DM
                 msg.delete();
@@ -80,6 +112,7 @@ bot.on('message', msg => {
         default:
             break;
     }
+
     //Help if mentionned
     if (botIsMentionned) {
         if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
@@ -90,12 +123,6 @@ bot.on('message', msg => {
 });
 
 /////////////////////// USEFUL FUNCTIONS
-
-function removeRandomElementsFromArray(arr, newLength) {
-    var a = arr.slice();
-    while (a.length > newLength) a.splice(randInt(a.length - 1), 1);
-    return a;
-}
 
 async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500) {
     const sum_messages = [];
@@ -130,17 +157,40 @@ async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500
     return sum_messages;
 }
 
-function randInt(max, min) {
-    return ((min | 0) + Math.random() * (max + 1)) | 0;
+function format_string_for_mysql_query (str) {
+    return str.replace(/[\0\x08\x09\x1a\n\r"'\\\%]/g, function (char) {
+        switch (char) {
+            case "\0":
+                return "\\0";
+            case "\x08":
+                return "\\b";
+            case "\x09":
+                return "\\t";
+            case "\x1a":
+                return "\\z";
+            case "\n":
+                return "\\n";
+            case "\r":
+                return "\\r";
+            case "\"":
+            case "'":
+            case "\\":
+            case "%":
+                return "\\"+char; // prepends a backslash to backslash, percent,
+                                  // and double/single quotes
+            default:
+                return char;
+        }
+    });
 }
 
 /////////////////////// DATABASE FUNCTIONS
 
 function checkDatabaseSetup() {
-    dbConnection.query("CREATE TABLE IF NOT EXISTS quotes (id INT PRIMARY KEY AUTO_INCREMENT, text VARCHAR(255), cooldown INT(2))", function (err, result) {
+    dbConnection.query("CREATE TABLE IF NOT EXISTS quotes (id INT PRIMARY KEY AUTO_INCREMENT, text TEXT, cooldown INT(2)) CHARACTER SET utf8mb4", function (err, result) {
     });
 
-    dbConnection.query("CREATE TABLE IF NOT EXISTS keywords (id INT PRIMARY KEY, idQuote INT(4), text VARCHAR(255))", function (err, result) {
+    dbConnection.query("CREATE TABLE IF NOT EXISTS keywords (id INT PRIMARY KEY AUTO_INCREMENT, idQuote INT(4), text VARCHAR(255)) CHARACTER SET utf8mb4", function (err, result) {
     });
 }
 
@@ -165,19 +215,62 @@ function getAllQuotes () {
             }
         })
     })
-
 }
 
 function getQuote (id) {
+    return new Promise(function (resolve, reject) {
+            dbConnection.query("SELECT * FROM quotes WHERE id = " + id, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            if (result.length > 0) {
+                resolve(new Quote(result[0].id, result[0].text, result[0].cooldown));
+            }
+            else {
+                reject("TABLE_EMPTY")
+            }
+        })
+    })
+}
 
+function getRandomQuote() {
+    return new Promise(function (resolve, reject) {
+        dbConnection.query("SELECT * FROM quotes ORDER BY RAND() LIMIT 1", function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            if (result.length > 0) {
+                resolve(new Quote(result[0].id, result[0].text, result[0].cooldown));
+            }
+            else {
+                reject("TABLE_EMPTY")
+            }
+        })
+    })
 }
 
 function getKeyWordsByQuote (id) {
 
 }
 
+function getCurrentSavedQuotesNumber() {
+    return new Promise(function (resolve, reject) {
+        dbConnection.query("SELECT COUNT(*) FROM quotes ", function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            if (result.length > 0) {
+                resolve(result[0]['COUNT(*)']);
+            }
+            else {
+                reject("TABLE_EMPTY")
+            }
+        })
+    })
+}
+
 function addQuote (text) {
-    dbConnection.query("INSERT INTO quotes (`text`, `cooldown`) VALUES ('" + text + "', 5)", function (err, result) {
+    dbConnection.query("INSERT INTO quotes (`text`, `cooldown`) VALUES ('" + format_string_for_mysql_query(text) + "', 5)", function (err, result) {
     });
 }
 
@@ -192,53 +285,25 @@ function editQuote (quoteObject) {
 /////////////////////// CLASSES
 
 class Quote {
-    #id;
-    #text;
-    #cooldown;
+    id;
+    text;
+    cooldown;
 
-    constructor (id, quote, cooldown) {
+    constructor (id, text, cooldown) {
         this.id = id;
-        this.quote = quote;
+        this.text = text;
         this.cooldown = cooldown;
-    }
-
-    getId() {
-        return this.#id;
-    }
-
-    getText() {
-        return this.#text;
-    }
-
-    getCooldown() {
-        return this.#cooldown;
-    }
-
-    setCooldown(cooldown) {
-        this.#cooldown = cooldown;
     }
 }
 
 class Keyword {
-    #id;
-    #idQuote;
-    #text;
+    id;
+    idQuote;
+    text;
 
     constructor (id, idQuote, text) {
         this.id = id;
         this.idQuote = idQuote;
         this.text = text;
-    }
-
-    getId() {
-        return this.#id;
-    }
-
-    getText() {
-        return this.#text;
-    }
-
-    getQuoteId() {
-        return this.#idQuote;
     }
 }
