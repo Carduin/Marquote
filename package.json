@@ -12,6 +12,7 @@
   "dependencies": {
     "discord.js": "^12.5.1",
     "dotenv": "^8.2.0",
-    "keyword-extractor": "0.0.19"
+    "keyword-extractor": "0.0.19",
+    "mysql": "^2.18.1"
   }
 }
