@@ -31,6 +31,10 @@ bot.on('ready', () => {
     });
 
     checkDatabaseSetup();
+
+    getKeyWordsByQuote(123).then(keywords => {
+        console.info(keywords);
+    })
 });
 
 bot.on('message', msg => {
@@ -80,11 +84,28 @@ bot.on('message', msg => {
                         if(numberOfQuotesToAdd > 0) {
                             for(i = currentSavedNumber; i <= messages.length -1; i++) {
                                 addQuote(messages[i]);
+
+                                let cleanQuote = messages[i];
+                                //Nettoyage des citations : suppression d'espaces inutiles et suppression d'émojis
+                                cleanQuote = cleanQuote.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '')
+                                //Suppression des tirets
+                                cleanQuote = cleanQuote.replace(/-/g, '').trim();
+                                //Suppression des étoiles
+                                cleanQuote = cleanQuote.replace(/\*/g, '').trim();
+
+                                var extraction_result = keyword_extractor.extract(cleanQuote,{
+                                    language:"french",
+                                    remove_digits: true,
+                                    return_changed_case:false,
+                                    remove_duplicates: true
+                                });
+                                if(extraction_result.length > 0 ) {
+                                    extraction_result.forEach(keyword => {
+                                        addQuoteKeyword(keyword, i+1); //Because Mysql AUTO INCREMENT begins at 1
+                                    })
+                                }
                             }
                             msg.channel.send("Citations mises à jour ("+ numberOfQuotesToAdd +") !");
-                            /*
-                            GESTION DES MOTS CLES
-                             */
                         }
                         else {
                             msg.channel.send("Aucune citation à ajouter !");
@@ -112,6 +133,7 @@ bot.on('message', msg => {
                 msg.channel.send(args.join(' '));
             }
             break;
+
         default:
             break;
     }
@@ -198,12 +220,6 @@ function checkDatabaseSetup() {
 }
 
 function getAllQuotes () {
-    /*
-    Appel :
-    getAllQuotes().then(rows => {
-        console.log(rows);
-    })
-     */
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT * FROM quotes", function (err, result) {
             if (err) {
@@ -237,7 +253,20 @@ function getRandomQuote() {
 }
 
 function getKeyWordsByQuote (id) {
-
+    return new Promise(function (resolve, reject) {
+        dbConnection.query("SELECT keywords.id, keywords.idQuote, keywords.text FROM keywords JOIN quotes ON keywords.idQuote = quotes.id WHERE idQuote = " + id, function (err, result) {
+            if (err) {
+                reject(err);
+            }
+            if (result.length > 0) {
+                objectArray = [];
+                result.forEach(currentResult => {
+                    objectArray.push(new Keyword(currentResult.id, currentResult.idQuote, currentResult.text))
+                })
+                resolve(objectArray);
+            }
+        })
+    })
 }
 
 function getCurrentSavedQuotesNumber() {
@@ -262,7 +291,8 @@ function addQuote (text) {
 }
 
 function addQuoteKeyword (text, quoteId) {
-
+    dbConnection.query("INSERT INTO keywords (`idQuote`, `text`) VALUES (" + quoteId +",'" + format_string_for_mysql_query(text) + "')", function (err, result) {
+    });
 }
 
 function editQuote (quoteObject) {
