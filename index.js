@@ -97,7 +97,7 @@ bot.on('message', msg => {
                                 });
                                 if(extraction_result.length > 0 ) {
                                     extraction_result.forEach(keyword => {
-                                        addQuoteKeyword(keyword, i+1); //Because Mysql AUTO INCREMENT begins at 1
+                                        addQuoteKeyword(i+1, keyword); //Because Mysql AUTO INCREMENT begins at 1
                                     })
                                 }
                             }
@@ -158,16 +158,49 @@ bot.on('message', msg => {
             }
             break;
         default:
+            //Help if mentionned
+            if (botIsMentionned) {
+                if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
+                    msg.channel.send('Mon préfixe est : **' + PREFIX + "**");
+                }
+            }
+
+            //Keywords reaction
+            if(authorIsNotSelf) {
+                getAllQuotes().then(quotes => {
+                    var matchNotFound = true;
+                    var currentQuote = 0;
+                    while(matchNotFound && currentQuote < quotes.length) {
+                        let currentQuoteData = quotes[currentQuote];
+                        getKeyWordsByQuote(quotes[currentQuote].id).then(keywords => {
+                            var keywordMatchNumber = 0;
+                            keywords.forEach(keyword => {
+                                if(msg.content.toLowerCase().includes(keyword.text.toLowerCase())) {
+                                    keywordMatchNumber++;
+                                }
+                            })
+                            if(keywordMatchNumber >= keywords.length/3) {
+                                var oddsPercentage = Math.random() * 100;
+                                if(oddsPercentage >= 80) { // 20% de chances
+                                    if(currentQuoteData.cooldown === 0 ) {
+                                        matchNotFound = false;
+                                        msg.channel.send(currentQuoteData.text);
+                                        updateQuoteCooldown(currentQuoteData.id, 10);
+                                    }
+                                    else {
+                                        updateQuoteCooldown(currentQuoteData.id, currentQuoteData.cooldown-1);
+                                    }
+
+                                }
+
+                            }
+                        });
+                        currentQuote++;
+                    }
+                })
+            }
             break;
     }
-
-    //Help if mentionned
-    if (botIsMentionned) {
-        if (msg.content === "<@!" + bot.user.id + ">" || msg.content === "<@!" + bot.user.id + "> ") {
-            msg.channel.send('Mon préfixe est : **' + PREFIX + "**");
-        }
-    }
-
 });
 
 /////////////////////// USEFUL FUNCTIONS
@@ -309,17 +342,18 @@ function getCurrentSavedQuotesNumber() {
 }
 
 function addQuote (text) {
-    dbConnection.query("INSERT INTO quotes (`text`, `cooldown`) VALUES ('" + format_string_for_mysql_query(text) + "', 5)", function (err, result) {
+    dbConnection.query("INSERT INTO quotes (`text`, `cooldown`) VALUES ('" + format_string_for_mysql_query(text) + "', 0)", function (err, result) {
     });
 }
 
-function addQuoteKeyword (text, quoteId) {
+function addQuoteKeyword (quoteId, text) {
     dbConnection.query("INSERT INTO keywords (`idQuote`, `text`) VALUES (" + quoteId +",'" + format_string_for_mysql_query(text) + "')", function (err, result) {
     });
 }
 
-function editQuote (quoteObject) {
-
+function updateQuoteCooldown (id, cooldown) {
+    dbConnection.query("UPDATE quotes SET cooldown = " + cooldown + " WHERE id = " + id, function (err, result) {
+    });
 }
 
 /////////////////////// CLASSES
