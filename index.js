@@ -31,10 +31,6 @@ bot.on('ready', () => {
     });
 
     checkDatabaseSetup();
-
-    getKeyWordsByQuote(123).then(keywords => {
-        console.info(keywords);
-    })
 });
 
 bot.on('message', msg => {
@@ -133,7 +129,34 @@ bot.on('message', msg => {
                 msg.channel.send(args.join(' '));
             }
             break;
-
+        case PREFIX + 'c' :
+            //Auto complete
+            if(authorIsNotSelf) {
+                if(hasArguments) {
+                    getAllQuotes().then(quotes => {
+                        var NoQuoteFound = true;
+                        var currentQuote = 0;
+                        var substring = args.join(' ');
+                        while (NoQuoteFound && currentQuote < quotes.length) {
+                            currentQuoteData = quotes[currentQuote];
+                            if (currentQuoteData.text.toLowerCase().startsWith(substring.toLowerCase()) ) {
+                                msg.channel.send("..." + currentQuoteData.text.substring(substring.length));
+                                NoQuoteFound = false;
+                            }
+                            else {
+                                currentQuote++;
+                            }
+                        }
+                        if(NoQuoteFound) {
+                            msg.channel.send("Alors la je suis sans mots...Je n'ai rien trouvé à compléter");
+                        }
+                    })
+                }
+                else {
+                    msg.channel.send("Merci de saisir des mots pour compléter la citation");
+                }
+            }
+            break;
         default:
             break;
     }
