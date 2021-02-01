@@ -193,6 +193,7 @@ bot.on('message', msg => {
 
             //Keywords reaction
             if(authorIsNotSelf) {
+                var hasAnswered = false;
                 checkDatabaseSetup();
                 getAllQuotes().then(quotes => {
                     var matchNotFound = true;
@@ -209,13 +210,14 @@ bot.on('message', msg => {
                                     keywordMatchNumber++;
                                 }
                             })
-                            if(keywordMatchNumber >= keywords.length/3) {
+                            if((keywordMatchNumber >= keywords.length/3) && !hasAnswered) {
                                 var oddsPercentage = Math.random() * 100;
                                 if(oddsPercentage >= 80) { // 20% de chances
                                     if(currentQuoteData.cooldown === 0 ) {
                                         matchNotFound = false;
                                         msg.channel.send(currentQuoteData.text);
                                         updateQuoteCooldown(currentQuoteData.id, 10);
+                                        hasAnswered = true;
                                     }
                                     else {
                                         updateQuoteCooldown(currentQuoteData.id, currentQuoteData.cooldown-1);
