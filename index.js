@@ -297,6 +297,20 @@ function format_string_for_mysql_query (str) {
     });
 }
 
+function getSqlFormattedDateTimeEuropeStandard() {
+    var pad = function(num) { return ('00'+num).slice(-2) };
+    var date;
+    date = new Date();
+    date = date.getUTCFullYear()         + '-' +
+        pad(date.getUTCMonth() + 1)  + '-' +
+        pad(date.getUTCDate())       + ' ' +
+        pad(date.getUTCHours()+1)      + ':' +
+        pad(date.getUTCMinutes())    + ':' +
+        pad(date.getUTCSeconds());
+
+    return date;
+}
+
 /////////////////////// DATABASE FUNCTIONS
 
 function checkDatabaseSetup() {
@@ -305,11 +319,19 @@ function checkDatabaseSetup() {
 
     dbConnection.query("CREATE TABLE IF NOT EXISTS keywords (id INT PRIMARY KEY AUTO_INCREMENT, idQuote INT(4), text VARCHAR(255)) CHARACTER SET utf8mb4", function (err, result) {
     });
+
+    dbConnection.query("CREATE TABLE IF NOT EXISTS query_statistics (time DATETIME , type VARCHAR(255)) CHARACTER SET utf8mb4", function (err, result) {
+    });
+
+    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'check_tables')", function (err, result) {
+    });
 }
 
 function getAllQuotes () {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT * FROM quotes", function (err, result) {
+            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
+            });
             if (err) {
                 reject(err);
             }
@@ -318,6 +340,7 @@ function getAllQuotes () {
                 result.forEach(currentResult => {
                     objectArray.push(new Quote(currentResult.id, currentResult.text, currentResult.cooldown))
                 })
+
                 resolve(objectArray);
             }
         })
@@ -327,10 +350,13 @@ function getAllQuotes () {
 function getRandomQuote() {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT * FROM quotes ORDER BY RAND() LIMIT 1", function (err, result) {
+            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
+            });
             if (err) {
                 reject(err);
             }
             if (result.length > 0) {
+
                 resolve(new Quote(result[0].id, result[0].text, result[0].cooldown));
             }
             else {
@@ -343,6 +369,8 @@ function getRandomQuote() {
 function getKeyWordsByQuote (id) {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT keywords.id, keywords.idQuote, keywords.text FROM keywords JOIN quotes ON keywords.idQuote = quotes.id WHERE idQuote = " + id, function (err, result) {
+            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
+            });
             if (err) {
                 reject(err);
             }
@@ -360,6 +388,8 @@ function getKeyWordsByQuote (id) {
 function getCurrentSavedQuotesNumber() {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT COUNT(*) FROM quotes ", function (err, result) {
+            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
+            });
             if (err) {
                 reject(err);
             }
@@ -376,15 +406,21 @@ function getCurrentSavedQuotesNumber() {
 function addQuote (text) {
     dbConnection.query("INSERT INTO quotes (`text`, `cooldown`) VALUES ('" + format_string_for_mysql_query(text) + "', 0)", function (err, result) {
     });
+    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'insert')", function (err, result) {
+    });
 }
 
 function addQuoteKeyword (quoteId, text) {
     dbConnection.query("INSERT INTO keywords (`idQuote`, `text`) VALUES (" + quoteId +",'" + format_string_for_mysql_query(text) + "')", function (err, result) {
     });
+    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'insert')", function (err, result) {
+    });
 }
 
 function updateQuoteCooldown (id, cooldown) {
     dbConnection.query("UPDATE quotes SET cooldown = " + cooldown + " WHERE id = " + id, function (err, result) {
+    });
+    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'update')", function (err, result) {
     });
 }
 
