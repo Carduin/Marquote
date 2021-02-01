@@ -322,16 +322,11 @@ function checkDatabaseSetup() {
 
     dbConnection.query("CREATE TABLE IF NOT EXISTS query_statistics (time DATETIME , type VARCHAR(255)) CHARACTER SET utf8mb4", function (err, result) {
     });
-
-    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'check_tables')", function (err, result) {
-    });
 }
 
 function getAllQuotes () {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT * FROM quotes", function (err, result) {
-            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
-            });
             if (err) {
                 reject(err);
             }
@@ -350,8 +345,6 @@ function getAllQuotes () {
 function getRandomQuote() {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT * FROM quotes ORDER BY RAND() LIMIT 1", function (err, result) {
-            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
-            });
             if (err) {
                 reject(err);
             }
@@ -369,8 +362,6 @@ function getRandomQuote() {
 function getKeyWordsByQuote (id) {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT keywords.id, keywords.idQuote, keywords.text FROM keywords JOIN quotes ON keywords.idQuote = quotes.id WHERE idQuote = " + id, function (err, result) {
-            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
-            });
             if (err) {
                 reject(err);
             }
@@ -388,8 +379,6 @@ function getKeyWordsByQuote (id) {
 function getCurrentSavedQuotesNumber() {
     return new Promise(function (resolve, reject) {
         dbConnection.query("SELECT COUNT(*) FROM quotes ", function (err, result) {
-            dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'select')", function (err, result) {
-            });
             if (err) {
                 reject(err);
             }
@@ -406,22 +395,20 @@ function getCurrentSavedQuotesNumber() {
 function addQuote (text) {
     dbConnection.query("INSERT INTO quotes (`text`, `cooldown`) VALUES ('" + format_string_for_mysql_query(text) + "', 0)", function (err, result) {
     });
-    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'insert')", function (err, result) {
-    });
 }
 
 function addQuoteKeyword (quoteId, text) {
     dbConnection.query("INSERT INTO keywords (`idQuote`, `text`) VALUES (" + quoteId +",'" + format_string_for_mysql_query(text) + "')", function (err, result) {
-    });
-    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'insert')", function (err, result) {
     });
 }
 
 function updateQuoteCooldown (id, cooldown) {
     dbConnection.query("UPDATE quotes SET cooldown = " + cooldown + " WHERE id = " + id, function (err, result) {
     });
+    /*
     dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'update')", function (err, result) {
     });
+     */
 }
 
 /////////////////////// CLASSES
