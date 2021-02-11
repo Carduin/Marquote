@@ -10,7 +10,7 @@ Le bot est également doté d'une fonction lui permettant de réagir à des mots
 - Installation des dépendances : `cd marquote-master && npm install`
 - Changer le fichier `.env-sample` en `.env`
 - Modifier les valeurs du fichier `.env` selon indications dans la partie **Paramétrage**
-- Lancer le bot avec la commande `node index.js`
+- Lancer le bot avec la commande `node index.js` ou `npm run launch`
 
 ## Paramétrage
 
