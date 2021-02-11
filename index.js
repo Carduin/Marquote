@@ -216,7 +216,7 @@ bot.on('message', msg => {
                                     if(currentQuoteData.cooldown === 0 ) {
                                         matchNotFound = false;
                                         msg.channel.send(currentQuoteData.text);
-                                        updateQuoteCooldown(currentQuoteData.id, 10);
+                                        updateQuoteCooldown(currentQuoteData.id, 5);
                                         hasAnswered = true;
                                     }
                                     else {
