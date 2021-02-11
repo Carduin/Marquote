@@ -38,7 +38,7 @@ Commande | Description | Exemple | Résultat attendu
 ***help*** | Permet d'afficher la liste des commandes utilisables | !help | Liste des commandes
 ***f*** | Permet au bot d'alimenter sa base de données à partir de l'identifiant d'un salon. Les citations sont récupérées dans le salon identifié. Les citations récupérées sont celles commencant et se finissant par des guillemets ou des chevrons | !fill | "Citations mises à jour !"
 ***s*** | Le bot enverra un message dans le salon ou la commande est exécutée, avec le message indiqué ensuite. Le message contenant la commande sera supprimé, comme si le bot parlait seul | !speak Hello. | "Hello."
-***m*** | Permet d'obtenir une citation d'un enseignant de l'IUT de Bayonne et du Pays basque. Il s'agit de la fonction principale du bot | !m | "Si ma tante en avait, ce serait mon oncle"
+***m*** | Permet d'obtenir une citation d'un enseignant. Il s'agit de la fonction principale du bot | !m | "Si ma tante en avait, ce serait mon oncle"
 ***c*** | Permet d'obtenir une auto complétion d'une citation enregistrée | !c Bitch | "... ! **dabe**"
 
 ## Analyse de mots clés
