@@ -14,6 +14,7 @@ const DB_NAME= process.env.DB_NAME;
 const DB_USER= process.env.DB_USER;
 const DB_PASSWORD= process.env.DB_PASSWORD;
 let dbConnection;
+let db_config;
 
 bot.login(TOKEN);
 
@@ -21,7 +22,7 @@ bot.on('ready', () => {
     console.info("\n\n\"Faire de l'agilité, ce n'est pas faire de l'arrache !\"\n\n" + bot.user.tag + "\n\n");
     bot.user.setActivity(PREFIX + 'help', {type: 'PLAYING'})
 
-    var db_config = {
+    db_config = {
         host     : DB_HOST,
         port     : DB_PORT,
         user     : DB_USER,
@@ -29,25 +30,6 @@ bot.on('ready', () => {
         database : DB_NAME,
         charset : 'utf8mb4'
     };
-
-    function handleDisconnect() {
-        dbConnection = mysql.createConnection(db_config);
-
-
-        dbConnection.connect(function(err) {
-            if(err) {
-                setTimeout(handleDisconnect, 2000);
-            }
-        });
-
-        dbConnection.on('error', function(err) {
-            if(err.code === 'PROTOCOL_CONNECTION_LOST') {
-                handleDisconnect();
-            } else {
-                throw err;
-            }
-        });
-    }
 
     handleDisconnect();
 
@@ -297,20 +279,6 @@ function format_string_for_mysql_query (str) {
     });
 }
 
-function getSqlFormattedDateTimeEuropeStandard() {
-    var pad = function(num) { return ('00'+num).slice(-2) };
-    var date;
-    date = new Date();
-    date = date.getUTCFullYear()         + '-' +
-        pad(date.getUTCMonth() + 1)  + '-' +
-        pad(date.getUTCDate())       + ' ' +
-        pad(date.getUTCHours()+1)      + ':' +
-        pad(date.getUTCMinutes())    + ':' +
-        pad(date.getUTCSeconds());
-
-    return date;
-}
-
 /////////////////////// DATABASE FUNCTIONS
 
 function checkDatabaseSetup() {
@@ -319,8 +287,23 @@ function checkDatabaseSetup() {
 
     dbConnection.query("CREATE TABLE IF NOT EXISTS keywords (id INT PRIMARY KEY AUTO_INCREMENT, idQuote INT(4), text VARCHAR(255)) CHARACTER SET utf8mb4", function (err, result) {
     });
+}
 
-    dbConnection.query("CREATE TABLE IF NOT EXISTS query_statistics (time DATETIME , type VARCHAR(255)) CHARACTER SET utf8mb4", function (err, result) {
+function handleDisconnect() {
+    dbConnection = mysql.createConnection(db_config);
+
+    dbConnection.connect(function(err) {
+        if(err) {
+            setTimeout(handleDisconnect, 2000);
+        }
+    });
+
+    dbConnection.on('error', function(err) {
+        if(err.code === 'PROTOCOL_CONNECTION_LOST') {
+            handleDisconnect();
+        } else {
+            throw err;
+        }
     });
 }
 
@@ -405,10 +388,6 @@ function addQuoteKeyword (quoteId, text) {
 function updateQuoteCooldown (id, cooldown) {
     dbConnection.query("UPDATE quotes SET cooldown = " + cooldown + " WHERE id = " + id, function (err, result) {
     });
-    /*
-    dbConnection.query("INSERT INTO query_statistics VALUES ('" + getSqlFormattedDateTimeEuropeStandard() +"', 'update')", function (err, result) {
-    });
-     */
 }
 
 /////////////////////// CLASSES
