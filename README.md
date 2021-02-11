@@ -1,7 +1,7 @@
 # Marquote: a quotes Bot
 
 ## Descriptif
-Marquote est un bot Discord permettant de sortir à volonté des citations d'un enseignant de l'IUT de Bayonne et du Pays Basque, **Christophe Marquesuzaà**.
+Marquote est un bot Discord permettant de sortir à volonté des citations comiques d'un enseignant.
 Le bot est également doté d'une fonction lui permettant de réagir à des mots clés sélectionnés parmi les citations, pour répondre par une citation liée et créer des situations humoristiques.
 
 ## Installation
