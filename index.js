@@ -103,7 +103,7 @@ bot.on('message', msg => {
                                     extraction_result.forEach(keyword => {
                                         let quoteId;
                                         i != 0 ? quoteId = currentSavedNumber+i+1 : currentSavedNumber+1
-                                        addQuoteKeyword(i+1, keyword); //Because Mysql AUTO INCREMENT begins at 1
+                                        addQuoteKeyword(quoteId, keyword); //Because Mysql AUTO INCREMENT begins at 1
                                     })
                                 }
                             }
