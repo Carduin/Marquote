@@ -225,7 +225,7 @@ async function getQuotesFromGivenChannelAndFlagIfNotCorrect(channel, limit = 500
     while (true) {
         const options = { limit: 100 };
         if (last_id) {
-            options.before = last_id;
+            options.before = last_id+1;
         }
 
         const messages = await channel.messages.fetch(options);
