@@ -82,7 +82,7 @@ bot.on('message', msg => {
                     getQuotesFromGivenChannelAndFlagIfNotCorrect(quotesChannel, 1000).then(messages => {
                         numberOfQuotesToAdd = messages.length - currentSavedNumber;
                         if(numberOfQuotesToAdd > 0) {
-                            for(i = currentSavedNumber; i <= messages.length -1; i++) {
+                            for(i = 0; i <= numberOfQuotesToAdd -1; i++) {
                                 addQuote(messages[i]);
 
                                 let cleanQuote = messages[i];
