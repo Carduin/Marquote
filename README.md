@@ -1,4 +1,4 @@
-# Marquote: a quotes Bot
+# Marquote
 
 ## Descriptif
 Marquote est un bot Discord permettant de sortir à volonté des citations comiques d'un enseignant.
